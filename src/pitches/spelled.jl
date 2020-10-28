@@ -46,8 +46,8 @@ Creates a spelled pitch from `fifths` and `octaves`.
 """
 spelledp(f, o) = Pitch(spelled(f, o))
 
-function Base.show(io::IO, i::SpelledInterval)
-    # negative? print as -abs(i)
+function Base.show(io::IO, i::SpelledInterval) 
+   # negative? print as -abs(i)
     if sign(i) == -1
         print(io, "-")
         print(io, abs(i))
@@ -95,8 +95,8 @@ function -(i::SpelledInterval)
 end
 Base.zero(::Type{SpelledInterval}) = spelled(0,0)
 Base.zero(::SpelledInterval) = spelled(0,0)
-*(i::SpelledInterval, n::Int) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
-*(n::Int,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
+*(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
+*(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
 
 tomidi(i::SpelledInterval) = midi(mod(7*i.fifths,12) + 12*i.octaves)
 tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
@@ -181,8 +181,8 @@ Base.hash(i::SpelledIC, x::UInt) = hash(i.fifths, x)
 -(i::SpelledIC) = sic(-i.fifths)
 Base.zero(::Type{SpelledIC}) = sic(0)
 Base.zero(::SpelledIC) = sic(0)
-*(i::SpelledIC, n::Int) = sic(i.fifths * n)
-*(n::Int,i::SpelledIC) = sic(i.fifths * n)
+*(i::SpelledIC, n::Integer) = sic(i.fifths * n)
+*(n::Integer,i::SpelledIC) = sic(i.fifths * n)
 
 tomidi(i::SpelledIC) = midic(i.fifths * 7)
 tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)

@@ -154,8 +154,8 @@ convert(::Type{N}, p::MidiIC) where {N<:Number} = convert(N, p.ic)
 zero(::Type{MidiInterval}) = midi(0)
 zero(::MidiInterval) = midi(0)
 
-*(p::MidiInterval, n::Int) = midi(p.interval*n)
-*(n::Int, p::MidiInterval) = midi(p.interval*n)
+*(p::MidiInterval, n::Integer) = midi(p.interval*n)
+*(n::Integer, p::MidiInterval) = midi(p.interval*n)
 
 tomidi(p::MidiInterval) = p
 octave(::Type{MidiInterval}) = midi(12)
@@ -178,8 +178,8 @@ chromsemi(::Type{MidiInterval}) = midi(1)
 zero(::Type{MidiIC}) = midic(0)
 zero(::MidiIC) = midic(0)
 
-*(p::MidiIC, n::Int) = midic(p.ic*n)
-*(n::Int, p::MidiIC) = midic(p.ic*n)
+*(p::MidiIC, n::Integer) = midic(p.ic*n)
+*(n::Integer, p::MidiIC) = midic(p.ic*n)
 
 tomidi(p::MidiIC) = p
 octave(::Type{MidiIC}) = midic(0)

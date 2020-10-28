@@ -3,7 +3,7 @@ module Pitches
 import Base: show, +, -, *, convert, zero, isless, isequal
 
 export Interval, IntervalClass, Pitch
-export tomidi, octave, ic, isstep, chromsemi, embed
+export tomidi, octave, unison, ic, isstep, chromsemi, embed
 export intervaltype, intervalclasstype
 export topitch, tointerval, pc
 
@@ -51,6 +51,16 @@ abstract type IntervalClass <: Interval end
 Returns a MidiInterval that corresponds to or approximates `p`.
 """
 function tomidi end
+
+"""
+    unison(T)
+
+Returns the interval of a unison for interval type `T`.
+Alias for `Base.zero`.
+New interval types should implement `Base.zero`,
+but user code should call `unison` for better interpretability.
+"""
+const unison = Base.zero
 
 """
     octave(T, [n=1])
@@ -156,5 +166,6 @@ Base.hash(p::Pitch, x::UInt) = hash(p.pitch, x)
 
 include("pitches/midi.jl")
 include("pitches/spelled.jl")
+include("pitches/logfreq.jl")
 
 end # module
