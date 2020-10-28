@@ -1,13 +1,3 @@
-const feps = 0.00001
-
-import Base: ≈
-
-≈(a::FreqInterval, b::FreqInterval) =
-    a.lfr ≈ b.lfr
-≈(a::FreqIC, b::FreqIC) =
-    (a.lfr ≈ b.lfr) || (a.lfr + log(2) ≈ b.lfr) || (a.lfr ≈ b.lfr + log(2))
-≈(a::Pitch, b::Pitch) = a.pitch ≈ b.pitch
-
 @testset "Frequency pitches" begin
     @testset "types ok and compact" begin
         @test isbitstype(FreqInterval)

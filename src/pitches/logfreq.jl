@@ -62,6 +62,9 @@ Base.isless(i1::FreqInterval, i2::FreqInterval) =
 Base.isequal(i1::FreqInterval, i2::FreqInterval) =
     i1.lfr == i2.lfr
 
+Base.isapprox(a::FreqInterval, b::FreqInterval; kwargs...) =
+    Base.isapprox(a.lfr, b.lfr; kwargs...)
+
 Base.hash(i::FreqInterval, x::UInt64) = hash(i.lfr, x)
 
 Base.Float64(i::FreqInterval) = i.lfr
@@ -149,6 +152,11 @@ Base.isless(i1::FreqIC, i2::FreqIC) =
 
 Base.isequal(i1::FreqIC, i2::FreqIC) =
     i1.lfr == i2.lfr
+
+Base.isapprox(a::FreqIC, b::FreqIC; kwargs...) =
+    Base.isapprox(a.lfr, b.lfr; kwargs...) ||
+    Base.isapprox(a.lfr + log(2), b.lfr; kwargs...) ||
+    Base.isapprox(a.lfr, b.lfr + log(2); kwargs)
 
 Base.hash(i::FreqIC, x::UInt64) = hash(i.lfr, x)
 

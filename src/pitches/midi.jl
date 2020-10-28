@@ -63,7 +63,7 @@ or intervals that are not written as literal integers.
 macro midi(expr)
     mkmidi(x) = x
     mkmidi(e::Expr) = Expr(e.head, map(mkmidi, e.args)...)
-    mkmidi(n::Int) = :(midi($n))
+    mkmidi(n::Int) = :(Pitches.midi($n))
 
     return esc(mkmidi(expr))
 end
@@ -79,7 +79,7 @@ or intervals that are not written as literal integers.
 macro midic(expr)
     mkmidi(x) = x
     mkmidi(e::Expr) = Expr(e.head, map(mkmidi, e.args)...)
-    mkmidi(n::Int) = :(midic($n))
+    mkmidi(n::Int) = :(Pitches.midic($n))
 
     return esc(mkmidi(expr))
 end
@@ -95,7 +95,7 @@ or intervals that are not written as literal integers.
 macro midip(expr)
     mkmidi(x) = x
     mkmidi(e::Expr) = Expr(e.head, map(mkmidi, e.args)...)
-    mkmidi(n::Int) = :(midip($n))
+    mkmidi(n::Int) = :(Pitches.midip($n))
 
     return esc(mkmidi(expr))
 end
@@ -111,7 +111,7 @@ or intervals that are not written as literal integers.
 macro midipc(expr)
     mkmidi(x) = x
     mkmidi(e::Expr) = Expr(e.head, map(mkmidi, e.args)...)
-    mkmidi(n::Int) = :(midipc($n))
+    mkmidi(n::Int) = :(Pitches.midipc($n))
 
     return esc(mkmidi(expr))
 end

@@ -1,6 +1,6 @@
 module Pitches
 
-import Base: show, +, -, *, convert, zero, isless, isequal
+import Base: show, +, -, *, convert, zero, isless, isequal, isapprox
 
 export Interval, IntervalClass, Pitch
 export tomidi, octave, unison, ic, isstep, chromsemi, embed
@@ -158,6 +158,8 @@ pc(p::Pitch{I}) where {I<:Interval} = Pitch(ic(p.pitch))
 embed(p::Pitch{I}, octs::Int=0) where {I<:Interval} = Pitch(embed(p.pitch, octs))
 
 Base.isequal(p1::Pitch{I}, p2::Pitch{I}) where {I<:Interval} = p1.pitch == p2.pitch
+Base.isapprox(p1::Pitch, p2::Pitch; kwargs...) =
+    Base.isapprox(p1.pitch, p2.pitch; kwargs...)
 Base.isless(p1::Pitch{I}, p2::Pitch{I}) where {I<:Interval} = p1.pitch < p2.pitch
 Base.hash(p::Pitch, x::UInt) = hash(p.pitch, x)
 
