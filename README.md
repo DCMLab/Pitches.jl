@@ -1,6 +1,13 @@
 # Pitches.jl
 
 A library for handling musical pitches and intervals in a systematic way.
+For other (and mostly compatible) implementations see:
+
+- [pitchtypes](https://github.com/DCMLab/pitchtypes) (Python)
+- a Haskell implementation (WIP, coming soon)
+- a Clojure(Script) implementation (WIP, coming soon)
+
+The general interface is described [in a separate specification](https://github.com/DCMLab/standards/blob/master/pitch-libraries/Spec.md).
 
 ## Overview
 
@@ -95,6 +102,7 @@ In addition to arithmetic operations, some special intervals are defined:
 - `unison(Type{I})` / `zero(Type{I})`
 - `octave(Type{I})`
 - `chromsemi(Type{I})` (a chromatic semitone, optional)
+- `isstep(I)` (optional, a predicate that test whether the interval is considered a "step")
 
 Finally, some operations specify the relationship between intervals and interval classes:
 
@@ -138,12 +146,17 @@ The easiest way to use spelled pitches and intervals is
 to use the string macros `i` (for intervals) and `p` (for pitches),
 which parse a string in a standard notation
 that corresponds to how spelled pitches and intervals are printed.
+For parsing these representations programmatically,
+use `parsespelled` and `parsespelledpitch` for intervals and pitches, respectively.
 Spelled pitch classes are represented by an uppercase letter followed by zero or more accidentals,
 which can be either written as `b/#` or as `♭/♯`.
 Spelled pitches take an additional octave number after the letter and the accidentals.
 
 ```julia-repl
 julia> p"Eb"
+E♭
+
+julia> parsespelledpitch("Eb")
 E♭
 
 julia> typeof(p"Eb")
