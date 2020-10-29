@@ -1,5 +1,8 @@
 # Pitches.jl
 
+![https://github.com/DCMLab/Pitches.jl/workflows/Tests/badge.svg]
+[![codecov](https://codecov.io/gh/DCMLab/Pitches.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DCMLab/Pitches.jl)
+
 A library for handling musical pitches and intervals in a systematic way.
 For other (and mostly compatible) implementations see:
 
