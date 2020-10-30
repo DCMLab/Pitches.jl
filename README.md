@@ -2,7 +2,7 @@
 
 ![tests](https://github.com/DCMLab/Pitches.jl/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/DCMLab/Pitches.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DCMLab/Pitches.jl)
-[![docs (development version)](https://img.shields.io/badge/docs-dev-blue.svg)](https://USER_NAME.github.io/PACKAGE_NAME.jl/dev)
+[![docs (development version)](https://img.shields.io/badge/docs-dev-blue.svg)](https://dcmlab.github.io/Pitches.jl/dev)
 
 A library for handling musical pitches and intervals in a systematic way.
 For other (and mostly compatible) implementations see:
