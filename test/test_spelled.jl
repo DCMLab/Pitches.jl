@@ -25,6 +25,39 @@
         # TODO: test more complex parsing cases
     end
 
+    @testset "accessors" begin
+        @test octaves(i"M3+1") == 1
+        @test fifths(i"M3+1") == 4
+        @test diasteps(i"M3+1") == 2
+        @test alteration(i"M3+1") == 0
+        
+        @test octaves(i"-M3+1") == -2
+        @test fifths(i"-M3+1") == -4
+        @test diasteps(i"-M3+1") == 5
+        @test alteration(i"-M3+1") == -1
+
+        @test octaves(i"a5") == 0
+        @test fifths(i"a5") == 8
+        @test diasteps(i"a5") == 4
+        @test alteration(i"a5") == 1
+
+        @test octaves(p"Ebb5") == 5
+        @test fifths(p"Ebb5") == -10
+        @test diasteps(p"Ebb5") == 2
+        @test alteration(p"Ebb5") == -2
+        
+        @test octaves(p"F#") == 0
+        @test fifths(p"F#") == 6
+        @test diasteps(p"F#") == 3
+        @test alteration(p"F#") == 1
+
+        # edge cases
+        @test alteration(i"P4") == 0
+        @test alteration(i"M7") == 0
+        @test alteration(p"F") == 0
+        @test alteration(p"B") == 0
+    end
+
     @testset "printing" begin
         @test string(i"m3+1") == "m3+1"
         @test string(p"Eb4") == "E♭4"

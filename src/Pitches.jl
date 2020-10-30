@@ -89,6 +89,7 @@ function ic end
 
 """
     embed(ic, [oct=0])
+    embed(pc, [oct=0])
 
 Converts an interval class to an interval in the canonical octave,
 adding `oct` octaves, if supplied.
@@ -154,6 +155,12 @@ tointerval(p::Pitch{I}) where {I<:Interval} = p.pitch
 +(i::I, p::Pitch{I}) where {I<:Interval} = Pitch(p.pitch + i)
 -(p::Pitch{I}, i::I) where {I<:Interval} = Pitch(p.pitch - i)
 -(p1::Pitch{I}, p2::Pitch{I}) where {I<:Interval} = p1.pitch - p2.pitch
+
+"""
+    pc(p)
+
+Return the pitch class that corresponds to `p`.
+"""
 pc(p::Pitch{I}) where {I<:Interval} = Pitch(ic(p.pitch))
 embed(p::Pitch{I}, octs::Int=0) where {I<:Interval} = Pitch(embed(p.pitch, octs))
 

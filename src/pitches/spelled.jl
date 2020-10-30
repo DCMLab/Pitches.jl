@@ -1,5 +1,6 @@
 export SpelledInterval, spelled, spelledp
 export SpelledIC, sic, spc
+export diasteps, alteration, octaves, fifths
 export parsespelled, parsespelledpitch, @i_str, @p_str
 
 import Base: +, -, *, ==
@@ -9,14 +10,62 @@ import Base: +, -, *, ==
 #const dianames = String["F","C", "G", "D", "A", "E", "B"]
 #const dianames_lookup = Dict(l => i-1 for (i, l) in enumerate(dianames))
 const perfectints = Set{Int}([0,3,4])
-diasteps(fifths) = mod(fifths*4,7)
-chromshift(fifths) = fld(fifths + 1, 7) # like div, but rounds down
 accstr(n, u, d) =
     if n > 0; repeat(u,n) elseif n < 0; repeat(d,-n) else "" end
 qualpf(n, a, p, d) =
     if n > 0; repeat(a,n) elseif n < 0; repeat(d,-n) else p end
 qualimpf(n, a, mj, mn, d) =
     if n > 0; repeat(a,n) elseif n < -1; repeat(d,-n-1) elseif n == -1; mn else mj end
+
+# common functions (special interface)
+
+"""
+    diasteps(i)
+    diasteps(p)
+
+Return the generic diatonic steps taken by the interval modulo octaves (unison=`0`, 2nd=`1`, ..., octave=`0`).
+For pitches, return the integer that corresponds to the letter (C=`0`, D=`1`, ...).
+"""
+function diasteps end
+diasteps(fifths::Int) = mod(fifths*4,7)
+diasteps(p::Pitch) = diasteps(p.pitch)
+
+"""
+    alteration(i)
+    alteration(p)
+
+Return the number of semitones by which the interval is altered from its the perfect or major variant.
+For negative intervals, a positive alteration means smaller intervals.
+For pitches, return the accidentals (positive=sharps, `0`=natural).
+"""
+function alteration end # TODO: add tests
+alteration(fifths) = fld(fifths + 1, 7) # like div, but rounds down
+alteration(p::Pitch) = alteration(p.pitch)
+
+"""
+    octaves(i)
+    octaves(p)
+
+Return the number of octaves the interval spans.
+Since downward intervals are represented by a negative octave plus the complementary interval class, 
+negative intervals always start at `-1` octaves,
+e.g. a minor 3rd down is represented as `M6-1`.
+For a pitch, return the octave.
+"""
+function octaves end
+octaves(p::Pitch) = octaves(p.pitch)
+
+"""
+    fifths(i)
+    fifths(p)
+
+Return the octave-invariant part of the interval in fifths.
+Negative intervals are represented as complementary intervals with negative `octaves`,
+so a minor third down is represented as `M6-1`.
+For a pitch, return the pitch class on the line of fifths.
+"""
+function fifths end
+fifths(p::Pitch) = fifths(p.pitch)
 
 # spelled interval
 # ----------------
@@ -46,6 +95,15 @@ Creates a spelled pitch from `fifths` and `octaves`.
 """
 spelledp(f, o) = Pitch(spelled(f, o))
 
+# accessors
+
+diasteps(i::SpelledInterval) = diasteps(i.fifths)
+alteration(i::SpelledInterval) = alteration(i.fifths)
+octaves(i::SpelledInterval) = i.octaves
+fifths(i::SpelledInterval) = i.fifths
+
+# general interface
+
 function Base.show(io::IO, i::SpelledInterval) 
    # negative? print as -abs(i)
     if sign(i) == -1
@@ -54,8 +112,8 @@ function Base.show(io::IO, i::SpelledInterval)
         return
     end
 
-    dia = diasteps(i.fifths)
-    diff = chromshift(i.fifths)
+    dia = diasteps(i)
+    diff = alteration(i)
     qual = if dia ∈ perfectints
         qualpf(diff, 'a', 'P', 'd')
     else
@@ -69,14 +127,14 @@ end
 
 function Base.show(io::IO, p::Pitch{SpelledInterval})
     i = p.pitch
-    dia = diasteps(i.fifths)
-    alter = chromshift(i.fifths)
+    dia = diasteps(i)
+    alter = alteration(i)
     print(io, string('A' + mod(dia + 2, 7), accstr(alter, '♯', '♭'), string(i.octaves)))
 end
 
 Base.isless(i1::SpelledInterval, i2::SpelledInterval) =
-    (i1.octaves, diasteps(i1.fifths), chromshift(i1.fifths)) <
-    (i2.octaves, diasteps(i2.fifths), chromshift(i2.fifths))
+    (i1.octaves, diasteps(i1), alteration(i1)) <
+    (i2.octaves, diasteps(i2), alteration(i2))
 
 Base.isequal(i1::SpelledInterval, i2::SpelledInterval) =
     i1.octaves == i2.octaves && i1.fifths == i2.fifths
@@ -85,18 +143,18 @@ Base.hash(i::SpelledInterval, x::UInt) = hash(i.octaves, hash(i.fifths, x))
 
 +(i1::SpelledInterval, i2::SpelledInterval) =
     spelled(i1.fifths + i2.fifths,
-            i1.octaves + i2.octaves + fld(diasteps(i1.fifths) + diasteps(i2.fifths), 7))
+            i1.octaves + i2.octaves + fld(diasteps(i1) + diasteps(i2), 7))
 -(i1::SpelledInterval, i2::SpelledInterval) =
     spelled(i1.fifths - i2.fifths,
-            i1.octaves - i2.octaves + fld(diasteps(i1.fifths) - diasteps(i2.fifths), 7))
+            i1.octaves - i2.octaves + fld(diasteps(i1) - diasteps(i2), 7))
 function -(i::SpelledInterval)
     off = mod(i.fifths,7) == 0 ? 0 : 1
     spelled(-i.fifths, (-i.octaves) - off)
 end
 Base.zero(::Type{SpelledInterval}) = spelled(0,0)
 Base.zero(::SpelledInterval) = spelled(0,0)
-*(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
-*(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i.fifths)*n, 7))
+*(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i)*n, 7))
+*(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i)*n, 7))
 
 tomidi(i::SpelledInterval) = midi(mod(7*i.fifths,12) + 12*i.octaves)
 tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
@@ -104,7 +162,7 @@ octave(::Type{SpelledInterval}) = spelled(0,1)
 
 function Base.sign(i::SpelledInterval)
     so = sign(i.octaves)
-    sd = sign(diasteps(i.fifths))
+    sd = sign(diasteps(i))
     if so != 0
         so
     else
@@ -120,7 +178,7 @@ intervalclasstype(::Type{SpelledInterval}) = SpelledIC
 
 function isstep(i::SpelledInterval)
     iabs = abs(i)
-    (iabs.octaves == 0) && (diasteps(iabs.fifths) <= 1)
+    (iabs.octaves == 0) && (diasteps(iabs) <= 1)
 end 
 chromsemi(::Type{SpelledInterval}) = spelled(7,0)
 
@@ -153,9 +211,18 @@ In analogy to `sic`, this function takes a number of 5ths.
 """
 spc(fs) = Pitch(sic(fs))
 
+# accessors
+
+diasteps(i::SpelledIC) = diasteps(i.fifths)
+alteration(i::SpelledIC) = alteration(i.fifths)
+octaves(i::SpelledIC) = 0
+fifths(i::SpelledIC) = i.fifths
+
+# interface functions
+
 function Base.show(io::IO, ic::SpelledIC)
-    dia = diasteps(ic.fifths)
-    diff = chromshift(ic.fifths)
+    dia = diasteps(ic)
+    diff = alteration(ic)
     qual = if dia ∈ perfectints
         qualpf(diff, 'a', 'P', 'd')
     else
@@ -167,8 +234,8 @@ end
 
 function Base.show(io::IO, p::Pitch{SpelledIC})
     i = p.pitch
-    dia = diasteps(i.fifths)
-    alter = chromshift(i.fifths)
+    dia = diasteps(i)
+    alter = alteration(i)
     print(io, ('A' + mod(dia+2, 7)) * accstr(alter, '♯', '♭'))
 end
 
@@ -188,7 +255,7 @@ tomidi(i::SpelledIC) = midic(i.fifths * 7)
 tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)
 octave(::Type{SpelledIC}) = sic(0)
 function Base.sign(i::SpelledIC)
-    dia = diasteps(i.fifths)
+    dia = diasteps(i)
     if dia == 0; 0 elseif dia > 3; -1 else 1 end
 end
 Base.abs(i::SpelledIC) = i
@@ -200,7 +267,7 @@ end
 intervaltype(::Type{SpelledIC}) = SpelledInterval
 intervalclasstype(::Type{SpelledIC}) = SpelledIC
 
-isstep(i::SpelledIC) = diasteps(i.fifths) ∈ [0,1,6]
+isstep(i::SpelledIC) = diasteps(i) ∈ [0,1,6]
 chromsemi(::Type{SpelledIC}) = sic(7)
 
 # parsing
@@ -229,7 +296,15 @@ function matchinterval(modifier, num)
     mod(dia*2+1, 7) - 1 + 7*alt
 end
 
-# TODO: write tests
+"""
+    parsespelled(str)
+
+Parse a spelled interval or interval class string.
+The type is determined from the string,
+so `i"M3+0"` returns an interval while `i"M3"` returns an interval class.
+
+See also: [`@i_str`](@ref), [`parsespelledpitch`](@ref).
+"""
 function parsespelled(str)
     m = match(rgsic, str)
     if m != nothing
@@ -253,6 +328,15 @@ function parsespelled(str)
     end
 end
 
+"""
+    i"str"
+
+Parse a spelled interval or interval class string.
+The type is determined from the string,
+so `i"M3+0"` returns an interval while `i"M3"` returns an interval class.
+
+See also: [`@p_str`](@ref), [`parsespelled`](@ref), [`parsespelledpitch`](@ref).
+"""
 macro i_str(str)
     parsespelled(str)
 end
@@ -281,6 +365,15 @@ function matchpitch(letter, accs)
     mod(dia*2 + 1, 7) - 1 + 7*alt
 end
 
+"""
+    parsespelledpitch(str)
+
+Parse a spelled pitch or pitch class string.
+The type is determined from the string,
+so `p"G4"` returns a pitch while `p"G"` returns a pitch class.
+
+See also: [`@p_str`](@ref), [`parsespelled`](@ref).
+"""
 function parsespelledpitch(str)
     m = match(rgspelledpc, str)
     if m != nothing
@@ -297,6 +390,15 @@ function parsespelledpitch(str)
     end
 end
 
+"""
+    p"str"
+
+Parse a spelled pitch or pitch class string.
+The type is determined from the string,
+so `p"G4"` returns a pitch while `p"G"` returns a pitch class.
+
+See also: [`@i_str`](@ref), [`parsespelledpitch`](@ref), [`parsespelled`](@ref).
+"""
 macro p_str(str)
     parsespelledpitch(str)
 end
