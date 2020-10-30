@@ -57,7 +57,7 @@ julia> transposeby([p"C4", p"E4", p"G4"], i"m3+0")
 ... spelled pitch classes:
 
 ```julia-repl
-transposeby([p"C", p"E", p"G"], i"m3")
+julia> transposeby([p"C", p"E", p"G"], i"m3")
 3-element Array{Pitch{SpelledIC},1}:
  E♭
  G

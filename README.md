@@ -2,6 +2,7 @@
 
 ![tests](https://github.com/DCMLab/Pitches.jl/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/DCMLab/Pitches.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DCMLab/Pitches.jl)
+[![docs (development version)](https://img.shields.io/badge/docs-dev-blue.svg)](https://USER_NAME.github.io/PACKAGE_NAME.jl/dev)
 
 A library for handling musical pitches and intervals in a systematic way.
 For other (and mostly compatible) implementations see:
@@ -56,7 +57,7 @@ julia> transposeby([p"C4", p"E4", p"G4"], i"m3+0")
 ... spelled pitch classes:
 
 ```julia-repl
-transposeby([p"C", p"E", p"G"], i"m3")
+julia> transposeby([p"C", p"E", p"G"], i"m3")
 3-element Array{Pitch{SpelledIC},1}:
  E♭
  G
