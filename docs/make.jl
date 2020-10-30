@@ -6,7 +6,7 @@ push!(LOAD_PATH, "../src/")
 using Pitches
 
 makedocs(
-    sitename="My Documentation",
+    sitename="Pitches.jl",
     pages = [
         "index.md",
         "tutorial.md",
