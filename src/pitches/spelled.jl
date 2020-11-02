@@ -196,8 +196,6 @@ Base.zero(::SpelledInterval) = spelled(0,0)
 *(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n)
 *(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n)
 
-tomidi(i::SpelledInterval) = midi(7*i.fifths + 12*i.octaves)
-tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
 octave(::Type{SpelledInterval}) = spelled(0,1)
 
 Base.sign(i::SpelledInterval) = sign(diasteps(i))
@@ -210,6 +208,11 @@ intervalclasstype(::Type{SpelledInterval}) = SpelledIC
 
 isstep(i::SpelledInterval) = abs(diasteps(i)) <= 1
 chromsemi(::Type{SpelledInterval}) = spelled(7,-4)
+
+# conversion
+
+tomidi(i::SpelledInterval) = midi(7*i.fifths + 12*i.octaves)
+tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
 
 # spelled interval class
 # ----------------------
@@ -283,8 +286,6 @@ Base.zero(::SpelledIC) = sic(0)
 *(i::SpelledIC, n::Integer) = sic(i.fifths * n)
 *(n::Integer,i::SpelledIC) = sic(i.fifths * n)
 
-tomidi(i::SpelledIC) = midic(i.fifths * 7)
-tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)
 octave(::Type{SpelledIC}) = sic(0)
 function Base.sign(i::SpelledIC)
     dia = degree(i)
@@ -300,7 +301,13 @@ intervalclasstype(::Type{SpelledIC}) = SpelledIC
 isstep(i::SpelledIC) = degree(i) ∈ [0,1,6]
 chromsemi(::Type{SpelledIC}) = sic(7)
 
+# conversion
+
+tomidi(i::SpelledIC) = midic(i.fifths * 7)
+tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)
+
 # parsing
+# -------
 
 const rgsic = r"^(-?)(a+|d+|[MPm])([1-7])$"
 const rgspelled = r"^(-?)(a+|d+|[MPm])([1-7])(\+|-)(\d+)$"

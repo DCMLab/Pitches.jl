@@ -3,7 +3,7 @@ module Pitches
 import Base: show, +, -, *, convert, zero, isless, isequal, isapprox
 
 export Interval, IntervalClass, Pitch
-export tomidi, octave, unison, ic, isstep, chromsemi, embed
+export octave, unison, ic, isstep, chromsemi, embed
 export intervaltype, intervalclasstype
 export topitch, tointerval, pc
 
@@ -17,7 +17,6 @@ export topitch, tointerval, pc
 Any interval type should be a subtype of `Interval`.
 Intervals should implement the following operations as far as possible:
 - `ic`
-- `tomidi`
 - `octave(T)`
 - `isstep`
 - `chromsemi(T)`
@@ -44,13 +43,6 @@ abstract type IntervalClass <: Interval end
 
 # interfaces
 # ----------
-
-"""
-    tomidi(p)
-
-Returns a MidiInterval that corresponds to or approximates `p`.
-"""
-function tomidi end
 
 """
     unison(T)

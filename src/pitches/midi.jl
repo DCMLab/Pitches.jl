@@ -3,6 +3,20 @@
 
 export MidiInterval, midi, midis, @midi, midip, midips, @midip
 export MidiIC, midic, midics, @midic, midipc, midipcs, @midipc
+export tomidi
+
+# special interface
+
+"""
+    tomidi(i [, ...])
+    tomidi(p [, ...])
+
+Converts a pitch or interval to the corresponding midi type.
+Depending on the input type, this might require additional parameters.
+"""
+function tomidi end
+
+# types
 
 """
     MidiInterval <: Interval
@@ -23,6 +37,8 @@ struct MidiIC <: IntervalClass
     ic :: Int
     MidiIC(ic) = new(mod(ic,12))
 end
+
+# constructors
 
 """
     midi(interval)
@@ -51,6 +67,8 @@ midic(interval::Int) = MidiIC(interval)
 Creates a midi pitch class (`Pitch{MidiIC}`) from an integer.
 """
 midipc(n::Int) = Pitch(midic(n))
+
+# constructor macros
 
 """
     @midi expr
@@ -116,6 +134,7 @@ macro midipc(expr)
     return esc(mkmidi(expr))
 end
 
+# Base interface
 
 show(io::IO, p::MidiInterval) = print(io, string("i", p.interval))
 show(io::IO, p::MidiIC) = print(io, string("ic", p.ic))
@@ -136,6 +155,8 @@ Base.Int64(p::MidiIC) = p.ic
 Base.Int64(p::Pitch{MidiInterval}) = p.pitch.interval
 Base.Int64(p::Pitch{MidiIC}) = p.pitch.ic
 
+# conversion
+
 convert(::Type{MidiInterval}, x::N) where {N<:Number} = midi(convert(Int, x))
 convert(::Type{Interval}, x::N) where {N<:Number} = midi(convert(Int, x))
 convert(::Type{Int}, p::MidiInterval) = p.interval
@@ -146,7 +167,13 @@ convert(::Type{IntervalClass}, x::N) where {N<:Number} = midic(convert(Int, x))
 convert(::Type{Int}, p::MidiIC) = p.ic
 convert(::Type{N}, p::MidiIC) where {N<:Number} = convert(N, p.ic)
 
-## midi interval: interfaces
+## tomidi (identities)
+tomidi(i::MidiInterval) = i
+tomidi(i::MidiIC) = i
+tomidi(p::Pitch{MidiInterval}) = p
+tomidi(p::Pitch{MidiIC}) = p
+
+# interval interface (midi interval)
 
 +(p1::MidiInterval, p2::MidiInterval) = midi(p1.interval + p2.interval)
 -(p1::MidiInterval, p2::MidiInterval) = midi(p1.interval - p2.interval)
@@ -157,7 +184,6 @@ zero(::MidiInterval) = midi(0)
 *(p::MidiInterval, n::Integer) = midi(p.interval*n)
 *(n::Integer, p::MidiInterval) = midi(p.interval*n)
 
-tomidi(p::MidiInterval) = p
 octave(::Type{MidiInterval}) = midi(12)
 Base.sign(p::MidiInterval) = sign(p.interval)
 Base.abs(p::MidiInterval) = midi(abs(p.interval))
@@ -170,7 +196,7 @@ intervalclasstype(::Type{MidiInterval}) = MidiIC
 isstep(p::MidiInterval) = abs(p.interval) <= 2 
 chromsemi(::Type{MidiInterval}) = midi(1)
 
-## midi interval class: interfaces
+# interval interface (midi interval class)
 
 +(p1::MidiIC, p2::MidiIC) = midic(p1.ic + p2.ic)
 -(p1::MidiIC, p2::MidiIC) = midic(p1.ic - p2.ic)
@@ -181,7 +207,6 @@ zero(::MidiIC) = midic(0)
 *(p::MidiIC, n::Integer) = midic(p.ic*n)
 *(n::Integer, p::MidiIC) = midic(p.ic*n)
 
-tomidi(p::MidiIC) = p
 octave(::Type{MidiIC}) = midic(0)
 Base.sign(p::MidiIC) = p.ic == 0 ? 0 : -sign(p.ic-6)
 Base.abs(p::MidiIC) = midic(abs(mod(p.ic + 6, 12) - 6))
