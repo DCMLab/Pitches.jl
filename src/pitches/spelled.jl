@@ -1,6 +1,7 @@
 export SpelledInterval, spelled, spelledp
 export SpelledIC, sic, spc
-export degree, generic, diasteps, alteration, octaves, fifths
+export octaves, internalocts, fifths
+export degree, generic, diasteps, alteration, letter
 export parsespelled, parsespelledpitch, @i_str, @p_str
 
 import Base: +, -, *, ==
@@ -25,7 +26,7 @@ Return the "relative scale degree" (0-6) to which the interval points
 (unison=`0`, 2nd=`1`, octave=`0`, 2nd down=`6`, etc.).
 For pitches, return the integer that corresponds to the letter (C=`0`, D=`1`, ...).
 
-See also: [`generic`](@ref), [`diasteps`](@ref)
+See also: [`generic`](@ref), [`diasteps`](@ref), [`letter`](@ref)
 """
 function degree end
 degree(fifths::Int) = mod(fifths*4,7)
@@ -44,32 +45,34 @@ See also: [`degree`](@ref), [`diasteps`](@ref)
 function generic end
 
 """
+    letter(p)
+
+Returns the letter of a pitch as a character.
+
+See also: [`degree`](@ref).
+"""
+letter(p::Pitch) = 'A' + mod(degree(p)+2, 7)
+
+"""
     diasteps(i)
-    diasteps(p)
 
 Return the diatonic steps of the interval (unison=`0`, 2nd=`1`, ..., octave=`7`).
-For pitches, return the integer that corresponds to the letter + octave
-(C*0=`0`, D*0=`1`, ..., C*4=`28`, ...).
+Respects both direction and octaves.
 
 See also [`degree`](@ref) and [`generic`](@ref).
 """
 function diasteps end
-diasteps(p::Pitch) = diasteps(p.pitch)
 
 """
     alteration(i)
     alteration(p)
 
 Return the number of semitones by which the interval is altered from its the perfect or major variant.
-For pitches, return the accidentals (positive=sharps, `0`=natural).
-
-The alteration always points upwards,
-so for negative intervals, a positive alteration means smaller intervals.
-If you need the opposite behaviour (negative alteration = smaller interval),
-use `alteration(abs(i))`.
+Positive alteration always indicates augmentation,
+negative alteration indicates diminution (minor or smaller) of the interval.
+For pitches, return the accidentals (positive=sharps, negative=flats, `0`=natural).
 """
-function alteration end # TODO: add tests
-# alteration(fifths) = fld(fifths + 1, 7) # like div, but rounds down
+function alteration end
 alteration(p::Pitch) = alteration(p.pitch)
 
 """
@@ -85,6 +88,13 @@ For a pitch, return its octave.
 """
 function octaves end
 octaves(p::Pitch) = octaves(p.pitch)
+
+"""
+    internalocts(i)
+
+Return the internal octaves (i.e. dependent on the 5ths dimension) of an interval.
+"""
+function internalocts end
 
 """
     fifths(i)
@@ -129,9 +139,11 @@ spelledp(f, o) = Pitch(spelled(f, o))
 # accessors
 
 degree(i::SpelledInterval) = degree(i.fifths)
+generic(i::SpelledInterval) = if sign(i) < 0; -degree(-i.fifths) else degree(i.fifths) end
 diasteps(i::SpelledInterval) = i.fifths*4 + i.octaves*7
-alteration(i::SpelledInterval) = if sign(i) < 0; fld(i.fifths + 5, 7) else fld(i.fifths + 1, 7) end
+alteration(i::SpelledInterval) = let absi = abs(i); fld(absi.fifths+1, 7) end
 octaves(i::SpelledInterval) = i.octaves + fld(i.fifths*4, 7)
+internalocts(i::SpelledInterval) = i.octaves
 fifths(i::SpelledInterval) = i.fifths
 
 # general interface
@@ -231,9 +243,11 @@ spc(fs) = Pitch(sic(fs))
 # accessors
 
 degree(i::SpelledIC) = degree(i.fifths)
+generic(i::SpelledIC) = degree(i.fifths)
 diasteps(i::SpelledIC) = degree(i.fifths)
 alteration(i::SpelledIC) = fld(i.fifths + 1, 7)
 octaves(i::SpelledIC) = 0
+internalocts(i::SpelledIC) = 0
 fifths(i::SpelledIC) = i.fifths
 
 # interface functions

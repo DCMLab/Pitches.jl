@@ -64,43 +64,72 @@ julia> -i"M3"
 m6
 ```
 
-## Details about the Representation
+## Representations of Spelled Intervals
 
-Internally, spelled intervals are represented by two dimentions, fifths and octaves.
-The dimention of fifths is interpreted in an octave-equivalent fashion
-and represents an upwards interval within an octave.
-For example `1` is a fifth upwards, `2` is a major 2nd upwards, and `-3` is a minor 3rd upwards.
-This corresponds to the "line-of-fifths" representation of interval classes.
+### Fifths and Octaves
 
-The octave dimension is orthogonal to the fifths:
-When the octave is 0, the interval is upward within one octave;
-when the the octave is not 0, the corresponding number of octaves is added to the interval.
-In particular, negative intervals are expressed using negative octaves.
-For example, a m3 down is equivalent to an octave down + a M6 up,
-so the internal representation of `-m3` is `M6-1`,
-or `fifths=3, octaves=-1`.
-Fifths and octaves can be accessed using the functions [`fifths`](@ref) and [`octaves`](@ref), respectively.
+Internally, spelled intervals are represented by, 5ths and octaves.
+Both dimensions are logically dependent:
+a major 2nd up is represented by going two 5ths up and one octave down.
+```julia-repl
+julia> spelled(2,-1) # two 5ths, one octave
+M2+0
+```
+This representation is convenient for arithmetics, which can usually be done component-wise.
+However, special care needs to be taken when converting to other representations.
+For example, the notated octave number (e.g. `+0` in `i"M2+0"`)
+does *not* correspond to the internal octaves of the interval (-1 in this case).
+In the notation, the interval class (`M2`) and the octave (`+0`) are *independent*.
 
-In addition to the line-of-fifths representation,
-it can be useful to think about the interval
-in terms of diatonic steps (the "generic interval") and alterations.
-The function [`diasteps`](@ref) returns the diatonic steps of an interval (class)
-within an octave, i.e, `0` for any unison (and any multiple of an octave), `1` for any 2nd, `2` for any 3rd, etc.
-If you need the total number of diatonic taken by the interval, use `diasteps(i) + 7*octaves(i)`.
-Since diasteps only considers the fifths dimension, negative intervals return the complementary number of steps!
+Interpreting the "internal" (or dependent) octave dimension of the interval
+does not make much sense without looking at the fifths.
+Therefore, the function [`octaves`](@ref) returns the "external" (or independent) octaves
+as used in the string representation, e.g.
+```julia-repl
+julia> octaves(i"M2+0")
+0
 
-The function [`alteration`](@ref) returns the deviation of the interval class
-from its major or perfect version in chromatic semitones,
-e.g. `1` for augmented, `-1` for minor imperfect and diminished perfect,
-and `-2` for diminished imperfect (or double-diminished perfect) intervals.
-Note that for negative intervals the returned value refers to the complementary interval class!
+julia> octaves(i"M2+1")
+1
 
-Since both [`diasteps`](@ref) and [`alteration`](@ref)
-behave somewhat unituitively for negative intervals,
-it can be useful to apply them to the positive interval obtained with `abs` instead.
+julia> octaves(i"M2-1")
+-1
+```
+If you want to look at the internal octaves, use [`internalocts`](@ref).
+This corresponds to looking at the `.octaves` field, but works on interval classes too.
 
-Both functions also work on spelled pitches,
-where they return the name (C=`0`, D=`1`, ...) and the accidentals (positive = sharps).
+### Diatonic Steps and Alterations
+
+We provide a number of convenience functions to derive other properties from this representation.
+The generic interval (i.e. the number of diatonic steps) can be obtained using [`generic`](@ref).
+`generic` respects the direction of the interval but is limitied to a single octave (0 to ±6).
+If you need the total number of diatonic steps, including octaves, use [`diasteps`](@ref).
+The function [`degree`](@ref) returns the scale degree implied by the interval relative to some root.
+Since scale degrees are always above the root, [`degree`](@ref),
+it treats negative intervals like their positive complements:
+```julia-repl
+julia> Pitches.generic(Pitches.i"-M3+1") # some kind of 3rd down
+-2
+
+julia> Pitches.diasteps(Pitches.i"-M3+1") # a 10th down
+-9
+
+julia> Pitches.degree(Pitches.i"-M3+1") # scale degree VI
+5
+```
+For interval classes, all three functions are equivalent.
+Note that all three count from 0 (for unison/I), not 1.
+
+Complementary to the generic interval functions,
+[`alteration`](@ref) returns the specific quality of the interval.
+For perfect or major intervals, it returns `0`.
+Larger absolute intervals return positive values,
+smaller intervals return negative values.
+
+[`degree`](@ref) and [`alteration`](@ref) also work on pitches.
+`degree(p)` returns an integer corresponding to the letter (C=`0`, D=`1`, ...),
+while `alteration(p)` provides the accidentals (natural=`0`, sharps -> positive, flats -> negative).
+For convenience, [`letter(p)`](@ref) returns the letter as an uppercase character.
 
 ## Reference
 
@@ -126,15 +155,13 @@ parsespelledpitch
 
 ### Other Special Functions
 
-Internally, spelled intervals are represented as an interval class on the line of fifths
-plus an octave offset.
-These two parts can be accessed separately.
-The interval class part can also be converted into diatonic steps (i.e. the generic interval)
-and the alteration (i.e. the specific variant) relative to the major or perfect version of the interval.
-
 ```@docs
 octaves
+internalocts
 fifths
+degree
+generic
 diasteps
 alteration
+letter
 ```

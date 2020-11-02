@@ -27,34 +27,40 @@
 
     @testset "accessors" begin
         @test octaves(i"M3+1") == 1
+        @test internalocts(i"M3+1") == -1
         @test fifths(i"M3+1") == 4
         @test degree(i"M3+1") == 2
+        @test generic(i"M3+1") == 2
         @test diasteps(i"M3+1") == 9
         @test alteration(i"M3+1") == 0
         
         @test octaves(i"-M3+1") == -2
+        @test internalocts(i"-M3+1") == 1
         @test fifths(i"-M3+1") == -4
         @test degree(i"-M3+1") == 5
+        @test generic(i"-M3+1") == -2
         @test diasteps(i"-M3+1") == -9
         @test alteration(i"-M3+1") == 0
 
         @test octaves(i"a5") == 0
+        @test internalocts(i"a5") == 0
         @test fifths(i"a5") == 8
         @test degree(i"a5") == 4
+        @test generic(i"a5") == 4
         @test diasteps(i"a5") == 4
         @test alteration(i"a5") == 1
 
         @test octaves(p"Ebb5") == 5
         @test fifths(p"Ebb5") == -10
         @test degree(p"Ebb5") == 2
-        @test diasteps(p"Ebb5") == 37
         @test alteration(p"Ebb5") == -2
+        @test letter(p"Ebb5") == 'E'
         
         @test octaves(p"F#") == 0
         @test fifths(p"F#") == 6
         @test degree(p"F#") == 3
-        @test diasteps(p"F#") == 3
         @test alteration(p"F#") == 1
+        @test letter(p"F#") == 'F'
 
         # edge cases
         @test alteration(i"P4") == 0
@@ -64,10 +70,8 @@
 
         @test alteration(i"a4+0") == 1
         @test alteration(i"m7+0") == -1
-        @test alteration(i"-a4+0") == -1
-        @test alteration(i"-m7+0") == 1
-        @test alteration(abs(i"-a4+0")) == 1
-        @test alteration(abs(i"-m7+0")) == -1
+        @test alteration(i"-a4+0") == 1
+        @test alteration(i"-m7+0") == -1
         
         @test alteration(p"F") == 0
         @test alteration(p"B") == 0
