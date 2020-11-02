@@ -14,10 +14,10 @@
     end
 
     @testset "string macros" begin
-        @test i"M3+1" == spelled(4, 1)
-        @test i"-M3+0" == spelled(-4, -1)
-        @test p"C♭4" == spelledp(-7, 4)
-        @test p"Cb4" == spelledp(-7, 4)
+        @test i"M3+1" == spelled(4, -1)
+        @test i"-M3+0" == spelled(-4, 2)
+        @test p"C♭4" == spelledp(-7, 8)
+        @test p"Cb4" == spelledp(-7, 8)
         @test i"m3" == sic(-3)
         @test i"-m3" == sic(3)
         @test p"C♯" == spc(7)
@@ -28,32 +28,47 @@
     @testset "accessors" begin
         @test octaves(i"M3+1") == 1
         @test fifths(i"M3+1") == 4
-        @test diasteps(i"M3+1") == 2
+        @test degree(i"M3+1") == 2
+        @test diasteps(i"M3+1") == 9
         @test alteration(i"M3+1") == 0
         
         @test octaves(i"-M3+1") == -2
         @test fifths(i"-M3+1") == -4
-        @test diasteps(i"-M3+1") == 5
-        @test alteration(i"-M3+1") == -1
+        @test degree(i"-M3+1") == 5
+        @test diasteps(i"-M3+1") == -9
+        @test alteration(i"-M3+1") == 0
 
         @test octaves(i"a5") == 0
         @test fifths(i"a5") == 8
+        @test degree(i"a5") == 4
         @test diasteps(i"a5") == 4
         @test alteration(i"a5") == 1
 
         @test octaves(p"Ebb5") == 5
         @test fifths(p"Ebb5") == -10
-        @test diasteps(p"Ebb5") == 2
+        @test degree(p"Ebb5") == 2
+        @test diasteps(p"Ebb5") == 37
         @test alteration(p"Ebb5") == -2
         
         @test octaves(p"F#") == 0
         @test fifths(p"F#") == 6
+        @test degree(p"F#") == 3
         @test diasteps(p"F#") == 3
         @test alteration(p"F#") == 1
 
         # edge cases
         @test alteration(i"P4") == 0
         @test alteration(i"M7") == 0
+        @test alteration(i"-P4+0") == 0
+        @test alteration(i"-M7+0") == 0
+
+        @test alteration(i"a4+0") == 1
+        @test alteration(i"m7+0") == -1
+        @test alteration(i"-a4+0") == -1
+        @test alteration(i"-m7+0") == 1
+        @test alteration(abs(i"-a4+0")) == 1
+        @test alteration(abs(i"-m7+0")) == -1
+        
         @test alteration(p"F") == 0
         @test alteration(p"B") == 0
     end

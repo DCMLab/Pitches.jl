@@ -1,14 +1,12 @@
 export SpelledInterval, spelled, spelledp
 export SpelledIC, sic, spc
-export diasteps, alteration, octaves, fifths
+export degree, generic, diasteps, alteration, octaves, fifths
 export parsespelled, parsespelledpitch, @i_str, @p_str
 
 import Base: +, -, *, ==
 
 # helpers
 
-#const dianames = String["F","C", "G", "D", "A", "E", "B"]
-#const dianames_lookup = Dict(l => i-1 for (i, l) in enumerate(dianames))
 const perfectints = Set{Int}([0,3,4])
 accstr(n, u, d) =
     if n > 0; repeat(u,n) elseif n < 0; repeat(d,-n) else "" end
@@ -20,14 +18,42 @@ qualimpf(n, a, mj, mn, d) =
 # common functions (special interface)
 
 """
+    degree(i)
+    degree(p)
+
+Return the "relative scale degree" (0-6) to which the interval points
+(unison=`0`, 2nd=`1`, octave=`0`, 2nd down=`6`, etc.).
+For pitches, return the integer that corresponds to the letter (C=`0`, D=`1`, ...).
+
+See also: [`generic`](@ref), [`diasteps`](@ref)
+"""
+function degree end
+degree(fifths::Int) = mod(fifths*4,7)
+degree(p::Pitch) = degree(p.pitch)
+
+"""
+    generic(i)
+
+Return the generic interval, i.e. the number of diatonic steps modulo octave.
+Unlike [`degree`](@ref), the result respects the sign of the interval
+(unison=`0`, 2nd up=`1`, 2nd down=`-1`).
+For pitches, use [`degree`](@ref).
+
+See also: [`degree`](@ref), [`diasteps`](@ref)
+"""
+function generic end
+
+"""
     diasteps(i)
     diasteps(p)
 
-Return the generic diatonic steps taken by the interval modulo octaves (unison=`0`, 2nd=`1`, ..., octave=`0`).
-For pitches, return the integer that corresponds to the letter (C=`0`, D=`1`, ...).
+Return the diatonic steps of the interval (unison=`0`, 2nd=`1`, ..., octave=`7`).
+For pitches, return the integer that corresponds to the letter + octave
+(C*0=`0`, D*0=`1`, ..., C*4=`28`, ...).
+
+See also [`degree`](@ref) and [`generic`](@ref).
 """
 function diasteps end
-diasteps(fifths::Int) = mod(fifths*4,7)
 diasteps(p::Pitch) = diasteps(p.pitch)
 
 """
@@ -35,11 +61,15 @@ diasteps(p::Pitch) = diasteps(p.pitch)
     alteration(p)
 
 Return the number of semitones by which the interval is altered from its the perfect or major variant.
-For negative intervals, a positive alteration means smaller intervals.
 For pitches, return the accidentals (positive=sharps, `0`=natural).
+
+The alteration always points upwards,
+so for negative intervals, a positive alteration means smaller intervals.
+If you need the opposite behaviour (negative alteration = smaller interval),
+use `alteration(abs(i))`.
 """
 function alteration end # TODO: add tests
-alteration(fifths) = fld(fifths + 1, 7) # like div, but rounds down
+# alteration(fifths) = fld(fifths + 1, 7) # like div, but rounds down
 alteration(p::Pitch) = alteration(p.pitch)
 
 """
@@ -47,10 +77,11 @@ alteration(p::Pitch) = alteration(p.pitch)
     octaves(p)
 
 Return the number of octaves the interval spans.
-Since downward intervals are represented by a negative octave plus the complementary interval class, 
-negative intervals always start at `-1` octaves,
-e.g. a minor 3rd down is represented as `M6-1`.
-For a pitch, return the octave.
+Positive intervals start at 0 octaves, increasing.
+Negative intervals start at -1 octaves, decreasing.
+(You might want to use `octaves(abs(i))` instead).
+
+For a pitch, return its octave.
 """
 function octaves end
 octaves(p::Pitch) = octaves(p.pitch)
@@ -59,9 +90,8 @@ octaves(p::Pitch) = octaves(p.pitch)
     fifths(i)
     fifths(p)
 
-Return the octave-invariant part of the interval in fifths.
-Negative intervals are represented as complementary intervals with negative `octaves`,
-so a minor third down is represented as `M6-1`.
+Return the octave-invariant part of the interval in fifths
+(unison=`0`, 5th up=`1`, 4th up/5th down=`-1`).
 For a pitch, return the pitch class on the line of fifths.
 """
 function fifths end
@@ -73,11 +103,12 @@ fifths(p::Pitch) = fifths(p.pitch)
 """
     SpelledInterval <: Interval
 
-Spelled intervals represented as pairs of (abstract) fifths and octaves.
-E.g., `SpelledInterval(-3, 1)` represents a minor decime upwards (-3 fifths, 1 octave).
+Spelled intervals represented as pairs of fifths and octaves.
+E.g., `SpelledInterval(-3, 2)` represents a minor 3rd upwards
+(3 fifths down, 2 octaves up).
 """
 struct SpelledInterval <: Interval
-    fifths :: Int # modulo octaves
+    fifths :: Int
     octaves :: Int
 end
 
@@ -97,9 +128,10 @@ spelledp(f, o) = Pitch(spelled(f, o))
 
 # accessors
 
-diasteps(i::SpelledInterval) = diasteps(i.fifths)
-alteration(i::SpelledInterval) = alteration(i.fifths)
-octaves(i::SpelledInterval) = i.octaves
+degree(i::SpelledInterval) = degree(i.fifths)
+diasteps(i::SpelledInterval) = i.fifths*4 + i.octaves*7
+alteration(i::SpelledInterval) = if sign(i) < 0; fld(i.fifths + 5, 7) else fld(i.fifths + 1, 7) end
+octaves(i::SpelledInterval) = i.octaves + fld(i.fifths*4, 7)
 fifths(i::SpelledInterval) = i.fifths
 
 # general interface
@@ -112,29 +144,30 @@ function Base.show(io::IO, i::SpelledInterval)
         return
     end
 
-    dia = diasteps(i)
-    diff = alteration(i)
+    dia = degree(i)
+    diff = alteration(i) # interval is always positive, so direction is correct
     qual = if dia ∈ perfectints
         qualpf(diff, 'a', 'P', 'd')
     else
         qualimpf(diff, 'a', 'M', 'm', 'd')
     end
-    
-    octstr = if i.octaves >= 0; '+' * string(i.octaves) else string(i.octaves) end
+
+    octs = octaves(i)
+    octstr = if octs >= 0; '+' * string(octs) else string(octs) end
 
     print(io, qual * string(dia+1) * octstr)
 end
 
 function Base.show(io::IO, p::Pitch{SpelledInterval})
     i = p.pitch
-    dia = diasteps(i)
+    dia = degree(i)
     alter = alteration(i)
-    print(io, string('A' + mod(dia + 2, 7), accstr(alter, '♯', '♭'), string(i.octaves)))
+    print(io, string('A' + mod(dia + 2, 7), accstr(alter, '♯', '♭'), string(octaves(i))))
 end
 
 Base.isless(i1::SpelledInterval, i2::SpelledInterval) =
-    (i1.octaves, diasteps(i1), alteration(i1)) <
-    (i2.octaves, diasteps(i2), alteration(i2))
+    (diasteps(i1), alteration(i1)) <
+    (diasteps(i2), alteration(i2))
 
 Base.isequal(i1::SpelledInterval, i2::SpelledInterval) =
     i1.octaves == i2.octaves && i1.fifths == i2.fifths
@@ -142,33 +175,20 @@ Base.isequal(i1::SpelledInterval, i2::SpelledInterval) =
 Base.hash(i::SpelledInterval, x::UInt) = hash(i.octaves, hash(i.fifths, x))
 
 +(i1::SpelledInterval, i2::SpelledInterval) =
-    spelled(i1.fifths + i2.fifths,
-            i1.octaves + i2.octaves + fld(diasteps(i1) + diasteps(i2), 7))
+    spelled(i1.fifths + i2.fifths, i1.octaves + i2.octaves)
 -(i1::SpelledInterval, i2::SpelledInterval) =
-    spelled(i1.fifths - i2.fifths,
-            i1.octaves - i2.octaves + fld(diasteps(i1) - diasteps(i2), 7))
-function -(i::SpelledInterval)
-    off = mod(i.fifths,7) == 0 ? 0 : 1
-    spelled(-i.fifths, (-i.octaves) - off)
-end
+    spelled(i1.fifths - i2.fifths, i1.octaves - i2.octaves)
+-(i::SpelledInterval) = spelled(-i.fifths, -i.octaves)
 Base.zero(::Type{SpelledInterval}) = spelled(0,0)
 Base.zero(::SpelledInterval) = spelled(0,0)
-*(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i)*n, 7))
-*(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n + fld(diasteps(i)*n, 7))
+*(i::SpelledInterval, n::Integer) = spelled(i.fifths*n, i.octaves*n)
+*(n::Integer,i::SpelledInterval) = spelled(i.fifths*n, i.octaves*n)
 
-tomidi(i::SpelledInterval) = midi(mod(7*i.fifths,12) + 12*i.octaves)
+tomidi(i::SpelledInterval) = midi(7*i.fifths + 12*i.octaves)
 tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
 octave(::Type{SpelledInterval}) = spelled(0,1)
 
-function Base.sign(i::SpelledInterval)
-    so = sign(i.octaves)
-    sd = sign(diasteps(i))
-    if so != 0
-        so
-    else
-        sd
-    end
-end
+Base.sign(i::SpelledInterval) = sign(diasteps(i))
 Base.abs(i::SpelledInterval) = if sign(i) < 0; -i else i end
 
 ic(i::SpelledInterval) = sic(i.fifths)
@@ -176,11 +196,8 @@ embed(i::SpelledInterval) = i
 intervaltype(::Type{SpelledInterval}) = SpelledInterval
 intervalclasstype(::Type{SpelledInterval}) = SpelledIC
 
-function isstep(i::SpelledInterval)
-    iabs = abs(i)
-    (iabs.octaves == 0) && (diasteps(iabs) <= 1)
-end 
-chromsemi(::Type{SpelledInterval}) = spelled(7,0)
+isstep(i::SpelledInterval) = abs(diasteps(i)) <= 1
+chromsemi(::Type{SpelledInterval}) = spelled(7,-4)
 
 # spelled interval class
 # ----------------------
@@ -213,15 +230,16 @@ spc(fs) = Pitch(sic(fs))
 
 # accessors
 
-diasteps(i::SpelledIC) = diasteps(i.fifths)
-alteration(i::SpelledIC) = alteration(i.fifths)
+degree(i::SpelledIC) = degree(i.fifths)
+diasteps(i::SpelledIC) = degree(i.fifths)
+alteration(i::SpelledIC) = fld(i.fifths + 1, 7)
 octaves(i::SpelledIC) = 0
 fifths(i::SpelledIC) = i.fifths
 
 # interface functions
 
 function Base.show(io::IO, ic::SpelledIC)
-    dia = diasteps(ic)
+    dia = degree(ic)
     diff = alteration(ic)
     qual = if dia ∈ perfectints
         qualpf(diff, 'a', 'P', 'd')
@@ -234,7 +252,7 @@ end
 
 function Base.show(io::IO, p::Pitch{SpelledIC})
     i = p.pitch
-    dia = diasteps(i)
+    dia = degree(i)
     alter = alteration(i)
     print(io, ('A' + mod(dia+2, 7)) * accstr(alter, '♯', '♭'))
 end
@@ -255,19 +273,17 @@ tomidi(i::SpelledIC) = midic(i.fifths * 7)
 tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)
 octave(::Type{SpelledIC}) = sic(0)
 function Base.sign(i::SpelledIC)
-    dia = diasteps(i)
+    dia = degree(i)
     if dia == 0; 0 elseif dia > 3; -1 else 1 end
 end
 Base.abs(i::SpelledIC) = i
 
 ic(i::SpelledIC) = i
-function embed(i::SpelledIC)
-    spelled(i.fifths, 0)
-end
+embed(i::SpelledIC) = spelled(i.fifths, -fld(i.fifths*4, 7))
 intervaltype(::Type{SpelledIC}) = SpelledInterval
 intervalclasstype(::Type{SpelledIC}) = SpelledIC
 
-isstep(i::SpelledIC) = diasteps(i) ∈ [0,1,6]
+isstep(i::SpelledIC) = degree(i) ∈ [0,1,6]
 chromsemi(::Type{SpelledIC}) = sic(7)
 
 # parsing
@@ -314,7 +330,7 @@ function parsespelled(str)
         if m != nothing
             fifths = matchinterval(m[2], m[3])
             octs = parse(Int, m[4]*m[5])
-            int = spelled(fifths, octs)
+            int = spelled(fifths, octs - fld(fifths*4, 7))
         else
             error("cannot parse interval \"$str\"")
         end
@@ -383,7 +399,7 @@ function parsespelledpitch(str)
         if m != nothing
             octs = parse(Int, m[3])
             fifths = matchpitch(m[1], m[2])
-            spelledp(fifths, octs)
+            spelledp(fifths, octs - fld(fifths*4, 7))
         else
             error("cannot parse pitch \"$str\"")
         end
