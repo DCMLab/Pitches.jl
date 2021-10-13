@@ -185,7 +185,7 @@
         @test sign(i"d1") == 0
         @test sign(i"a1") == 0
         @test sign(i"-m3") == -1
-        @test abs(i"-m3") == i"M6"
+        @test abs(i"-m3") == i"m3"
 
         @test ic(i"-M3") == i"m6"
         @test embed(i"M3") == i"M3+0"
@@ -219,8 +219,14 @@
         @test p"Eb4" - i"P5+0"  == p"Ab3"
         @test p"G4"  - p"C#4"   == i"d5+0"
 
+        @test alteration(p"Ab-1") == -1
+        @test alteration(p"A#-1") == 1
+
         @test pc(p"Eb4") == p"Eb"
         @test embed(p"Eb4") == p"Eb4"
+
+        @test tomidi(p"C#3") == midip(49)
+        @test tomidi(p"Db3") == midip(49)
     end
 
     @testset "pitch class interface" begin
@@ -235,5 +241,8 @@
         @test pc(p"Eb") == p"Eb"
         @test embed(p"Eb") == p"Eb0"
         @test embed(p"Eb", 4) == p"Eb4"
+
+        @test tomidi(p"C#") == midipc(1)
+        @test tomidi(p"Db") == midipc(1)
     end
 end

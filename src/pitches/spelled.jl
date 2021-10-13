@@ -73,7 +73,7 @@ negative alteration indicates diminution (minor or smaller) of the interval.
 For pitches, return the accidentals (positive=sharps, negative=flats, `0`=natural).
 """
 function alteration end
-alteration(p::Pitch) = alteration(p.pitch)
+alteration(p::Pitch) = alteration(ic(p.pitch))
 
 """
     octaves(i)
@@ -212,7 +212,7 @@ chromsemi(::Type{SpelledInterval}) = spelled(7,-4)
 # conversion
 
 tomidi(i::SpelledInterval) = midi(7*i.fifths + 12*i.octaves)
-tomidi(p::Pitch{SpelledInterval}) = Pitch(midi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
+tomidi(p::Pitch{SpelledInterval}) = Pitch(tomidi(p.pitch) + midi(12))  # C4 = 48 semitones above C0 = midi(60)
 
 # spelled interval class
 # ----------------------
@@ -291,7 +291,7 @@ function Base.sign(i::SpelledIC)
     dia = degree(i)
     if dia == 0; 0 elseif dia > 3; -1 else 1 end
 end
-Base.abs(i::SpelledIC) = i
+Base.abs(i::SpelledIC) = if sign(i) < 0; -i else i end
 
 ic(i::SpelledIC) = i
 embed(i::SpelledIC) = spelled(i.fifths, -fld(i.fifths*4, 7))
@@ -304,7 +304,7 @@ chromsemi(::Type{SpelledIC}) = sic(7)
 # conversion
 
 tomidi(i::SpelledIC) = midic(i.fifths * 7)
-tomidi(p::Pitch{SpelledIC}) = midipc(p.interval.fifths * 7)
+tomidi(p::Pitch{SpelledIC}) = midipc(p.pitch.fifths * 7)
 
 # parsing
 # -------
