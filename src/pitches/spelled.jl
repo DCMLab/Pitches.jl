@@ -165,9 +165,8 @@ function Base.show(io::IO, i::SpelledInterval)
     end
 
     octs = octaves(i)
-    octstr = if octs >= 0; '+' * string(octs) else string(octs) end
 
-    print(io, qual * string(dia+1) * octstr)
+    print(io, qual * string(dia+1) * ':' * string(octs))
 end
 
 function Base.show(io::IO, p::Pitch{SpelledInterval})
@@ -310,7 +309,7 @@ tomidi(p::Pitch{SpelledIC}) = midipc(p.pitch.fifths * 7)
 # -------
 
 const rgsic = r"^(-?)(a+|d+|[MPm])([1-7])$"
-const rgspelled = r"^(-?)(a+|d+|[MPm])([1-7])(\+|-)(\d+)$"
+const rgspelled = r"^(-?)(a+|d+|[MPm])([1-7]):(-?)(\d+)$"
 
 function matchinterval(modifier, num)
     dia = parse(Int, num) - 1
@@ -338,7 +337,7 @@ end
 
 Parse a spelled interval or interval class string.
 The type is determined from the string,
-so `i"M3+0"` returns an interval while `i"M3"` returns an interval class.
+so `i"M3:0"` returns an interval while `i"M3"` returns an interval class.
 
 See also: [`@i_str`](@ref), [`parsespelledpitch`](@ref).
 """
@@ -370,7 +369,7 @@ end
 
 Parse a spelled interval or interval class string.
 The type is determined from the string,
-so `i"M3+0"` returns an interval while `i"M3"` returns an interval class.
+so `i"M3:0"` returns an interval while `i"M3"` returns an interval class.
 
 See also: [`@p_str`](@ref), [`parsespelled`](@ref), [`parsespelledpitch`](@ref).
 """

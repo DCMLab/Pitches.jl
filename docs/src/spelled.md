@@ -73,26 +73,26 @@ Both dimensions are logically dependent:
 a major 2nd up is represented by going two 5ths up and one octave down.
 ```julia-repl
 julia> spelled(2,-1) # two 5ths, one octave
-M2+0
+M2:0
 ```
 This representation is convenient for arithmetics, which can usually be done component-wise.
 However, special care needs to be taken when converting to other representations.
-For example, the notated octave number (e.g. `+0` in `i"M2+0"`)
+For example, the notated octave number (e.g. `:0` in `i"M2:0"`)
 does *not* correspond to the internal octaves of the interval (-1 in this case).
-In the notation, the interval class (`M2`) and the octave (`+0`) are *independent*.
+In the notation, the interval class (`M2`) and the octave (`:0`) are *independent*.
 
 Interpreting the "internal" (or dependent) octave dimension of the interval
 does not make much sense without looking at the fifths.
 Therefore, the function [`octaves`](@ref) returns the "external" (or independent) octaves
 as used in the string representation, e.g.
 ```julia-repl
-julia> octaves(i"M2+0")
+julia> octaves(i"M2:0")
 0
 
-julia> octaves(i"M2+1")
+julia> octaves(i"M2:1")
 1
 
-julia> octaves(i"M2-1")
+julia> octaves(i"M2:-1")
 -1
 ```
 If you want to look at the internal octaves, use [`internalocts`](@ref).
@@ -108,13 +108,13 @@ The function [`degree`](@ref) returns the scale degree implied by the interval r
 Since scale degrees are always above the root, [`degree`](@ref),
 it treats negative intervals like their positive complements:
 ```julia-repl
-julia> Pitches.generic(Pitches.i"-M3+1") # some kind of 3rd down
+julia> Pitches.generic(Pitches.i"-M3:1") # some kind of 3rd down
 -2
 
-julia> Pitches.diasteps(Pitches.i"-M3+1") # a 10th down
+julia> Pitches.diasteps(Pitches.i"-M3:1") # a 10th down
 -9
 
-julia> Pitches.degree(Pitches.i"-M3+1") # scale degree VI
+julia> Pitches.degree(Pitches.i"-M3:1") # scale degree VI
 5
 ```
 For interval classes, all three functions are equivalent.

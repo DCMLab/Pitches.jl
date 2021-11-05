@@ -8,10 +8,9 @@ A library for handling musical pitches and intervals in a systematic way.
 For other (and mostly compatible) implementations see:
 
 - [pitchtypes](https://github.com/DCMLab/pitchtypes) (Python)
-- a Haskell implementation (WIP, coming soon)
-- a Clojure(Script) implementation (WIP, coming soon)
-
-The general interface is described [in a separate specification](https://github.com/DCMLab/standards/blob/master/pitch-libraries/Spec.md).
+- a [Haskell implementation](https://github.com/DCMLab/haskell-musicology/tree/master/musicology-pitch)
+- [purescript-pitches](https://github.com/DCMLab/purescript-pitches) (Purescript)
+- [pitches.rs](https://github.com/DCMLab/rust-pitches/blob/main/README.md) (Rust)
 
 ## Overview
 
@@ -47,7 +46,7 @@ julia> transposeby(map(midipc, [3,7,10]), midic(3))
 ... spelled pitch:
 
 ```julia-repl
-julia> transposeby([p"C4", p"E4", p"G4"], i"m3+0")
+julia> transposeby([p"C4", p"E4", p"G4"], i"m3:0")
 3-element Array{Pitch{SpelledInterval},1}:
  E♭4
  G4
@@ -188,9 +187,9 @@ e.g. `P1` for a perfect unison, `m3` for a minor 3rd or `aa4` for a double augme
 |aa... |augmented multiple times |
 
 Spelled intervals have the same elements as intervals but additionally take a number of octaves,
-written a suffix `+n`, e.g. `P1+0` or `m3+20`.
+written a suffix `:n`, e.g. `P1:0` or `m3:20`.
 By default, intervals are directed upwards. Downwards intervals are indicated by a negative sign,
-e.g. `-M2+1` (a major 9th down).
+e.g. `-M2:1` (a major 9th down).
 For interval classes, downward and upward intervals cannot be distinguish,
 so a downward interval is represented by its complementary upward interval:
 

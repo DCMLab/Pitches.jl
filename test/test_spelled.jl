@@ -14,8 +14,8 @@
     end
 
     @testset "string macros" begin
-        @test i"M3+1" == spelled(4, -1)
-        @test i"-M3+0" == spelled(-4, 2)
+        @test i"M3:1" == spelled(4, -1)
+        @test i"-M3:0" == spelled(-4, 2)
         @test p"C♭4" == spelledp(-7, 8)
         @test p"Cb4" == spelledp(-7, 8)
         @test i"m3" == sic(-3)
@@ -26,21 +26,21 @@
     end
 
     @testset "accessors" begin
-        @test octaves(i"M3+1") == 1
-        @test internalocts(i"M3+1") == -1
-        @test fifths(i"M3+1") == 4
-        @test degree(i"M3+1") == 2
-        @test generic(i"M3+1") == 2
-        @test diasteps(i"M3+1") == 9
-        @test alteration(i"M3+1") == 0
+        @test octaves(i"M3:1") == 1
+        @test internalocts(i"M3:1") == -1
+        @test fifths(i"M3:1") == 4
+        @test degree(i"M3:1") == 2
+        @test generic(i"M3:1") == 2
+        @test diasteps(i"M3:1") == 9
+        @test alteration(i"M3:1") == 0
         
-        @test octaves(i"-M3+1") == -2
-        @test internalocts(i"-M3+1") == 1
-        @test fifths(i"-M3+1") == -4
-        @test degree(i"-M3+1") == 5
-        @test generic(i"-M3+1") == -2
-        @test diasteps(i"-M3+1") == -9
-        @test alteration(i"-M3+1") == 0
+        @test octaves(i"-M3:1") == -2
+        @test internalocts(i"-M3:1") == 1
+        @test fifths(i"-M3:1") == -4
+        @test degree(i"-M3:1") == 5
+        @test generic(i"-M3:1") == -2
+        @test diasteps(i"-M3:1") == -9
+        @test alteration(i"-M3:1") == 0
 
         @test octaves(i"a5") == 0
         @test internalocts(i"a5") == 0
@@ -65,20 +65,20 @@
         # edge cases
         @test alteration(i"P4") == 0
         @test alteration(i"M7") == 0
-        @test alteration(i"-P4+0") == 0
-        @test alteration(i"-M7+0") == 0
+        @test alteration(i"-P4:0") == 0
+        @test alteration(i"-M7:0") == 0
 
-        @test alteration(i"a4+0") == 1
-        @test alteration(i"m7+0") == -1
-        @test alteration(i"-a4+0") == 1
-        @test alteration(i"-m7+0") == -1
+        @test alteration(i"a4:0") == 1
+        @test alteration(i"m7:0") == -1
+        @test alteration(i"-a4:0") == 1
+        @test alteration(i"-m7:0") == -1
         
         @test alteration(p"F") == 0
         @test alteration(p"B") == 0
     end
 
     @testset "printing" begin
-        @test string(i"m3+1") == "m3+1"
+        @test string(i"m3:1") == "m3:1"
         @test string(p"Eb4") == "E♭4"
         @test string(i"m3") == "m3"
         @test string(p"E#") == "E♯"
@@ -92,66 +92,66 @@
     end
 
     @testset "interval interface" begin
-        @test i"m3+0" + i"M3+0" == i"P5+0"
-        @test i"m3+0" + i"M7+0" == i"M2+1"
-        @test i"P5+0" + i"P5+0" == i"M2+1"
-        @test i"-m3+0" + i"M3+0" == i"a1+0"
-        @test i"m3+0" + i"-M3+0" == i"-a1+0"
-        @test i"m3+0" - i"M3+0" == i"-a1+0"
-        @test i"m3+0" - i"M6+0" == i"-a4+0"
-        @test -i"P4+0" == i"-P4+0"
-        @test -i"P4+0" == i"P5-1"
-        @test -i"P5+0" == zero(SpelledInterval) - i"P5+0"
+        @test i"m3:0" + i"M3:0" == i"P5:0"
+        @test i"m3:0" + i"M7:0" == i"M2:1"
+        @test i"P5:0" + i"P5:0" == i"M2:1"
+        @test i"-m3:0" + i"M3:0" == i"a1:0"
+        @test i"m3:0" + i"-M3:0" == i"-a1:0"
+        @test i"m3:0" - i"M3:0" == i"-a1:0"
+        @test i"m3:0" - i"M6:0" == i"-a4:0"
+        @test -i"P4:0" == i"-P4:0"
+        @test -i"P4:0" == i"P5:-1"
+        @test -i"P5:0" == zero(SpelledInterval) - i"P5:0"
 
-        @test zero(SpelledInterval) == i"P1+0"
-        @test zero(i"m3+0") == i"P1+0"
+        @test zero(SpelledInterval) == i"P1:0"
+        @test zero(i"m3:0") == i"P1:0"
 
-        @test i"P5+0" * 2 == i"M2+1"
-        @test i"M2+0" * 4 == i"a5+0"
-        @test i"-m3+0" * 4 == i"-d2+1"
-        @test i"M3+0" * -3 == i"-a7+0"
-        @test 4 * i"M2+0" == i"a5+0"
-        @test 4 * i"-M3+0" == i"-aa2+1"
-        @test 5 * i"M3+0" == i"aaa4+1"
+        @test i"P5:0" * 2 == i"M2:1"
+        @test i"M2:0" * 4 == i"a5:0"
+        @test i"-m3:0" * 4 == i"-d2:1"
+        @test i"M3:0" * -3 == i"-a7:0"
+        @test 4 * i"M2:0" == i"a5:0"
+        @test 4 * i"-M3:0" == i"-aa2:1"
+        @test 5 * i"M3:0" == i"aaa4:1"
 
-        @test tomidi(i"aaa4+1") == midi(20)
-        @test tomidi(i"-P5+0") == midi(-7)
-        @test octave(SpelledInterval) == i"P1+1"
-        @test sign(i"m2+0") == 1
-        @test sign(i"P1+0") == 0
-        @test sign(i"d1+0") == 0
-        @test sign(i"a1+0") == 0
-        @test sign(i"-m3+0") == -1
-        @test abs(i"-m3+0") == i"m3+0"
+        @test tomidi(i"aaa4:1") == midi(20)
+        @test tomidi(i"-P5:0") == midi(-7)
+        @test octave(SpelledInterval) == i"P1:1"
+        @test sign(i"m2:0") == 1
+        @test sign(i"P1:0") == 0
+        @test sign(i"d1:0") == 0
+        @test sign(i"a1:0") == 0
+        @test sign(i"-m3:0") == -1
+        @test abs(i"-m3:0") == i"m3:0"
 
-        @test ic(i"M3+3") == i"M3"
-        @test ic(i"-M3+1") == i"m6"
-        @test embed(i"M3+3") == i"M3+3"
+        @test ic(i"M3:3") == i"M3"
+        @test ic(i"-M3:1") == i"m6"
+        @test embed(i"M3:3") == i"M3:3"
         @test intervaltype(SpelledInterval) == SpelledInterval
         @test intervalclasstype(SpelledInterval) == SpelledIC
 
-        @test isstep(i"d1+0")
-        @test isstep(i"P1+0")
-        @test isstep(i"a1+0")
-        @test isstep(i"d2+0")
-        @test isstep(i"m2+0")
-        @test isstep(i"M2+0")
-        @test isstep(i"a2+0")
-        @test isstep(i"-d2+0")
-        @test isstep(i"-m2+0")
-        @test isstep(i"-M2+0")
-        @test isstep(i"-a2+0")
+        @test isstep(i"d1:0")
+        @test isstep(i"P1:0")
+        @test isstep(i"a1:0")
+        @test isstep(i"d2:0")
+        @test isstep(i"m2:0")
+        @test isstep(i"M2:0")
+        @test isstep(i"a2:0")
+        @test isstep(i"-d2:0")
+        @test isstep(i"-m2:0")
+        @test isstep(i"-M2:0")
+        @test isstep(i"-a2:0")
 
-        @test !isstep(i"d3+0")
-        @test !isstep(i"-d3+0")
-        @test !isstep(i"M7+0")
-        @test !isstep(i"-M7+0")
-        @test !isstep(i"P1+1")
-        @test !isstep(i"-P1+1")
-        @test !isstep(i"m2+1")
-        @test !isstep(i"-m2+1")
+        @test !isstep(i"d3:0")
+        @test !isstep(i"-d3:0")
+        @test !isstep(i"M7:0")
+        @test !isstep(i"-M7:0")
+        @test !isstep(i"P1:1")
+        @test !isstep(i"-P1:1")
+        @test !isstep(i"m2:1")
+        @test !isstep(i"-m2:1")
         
-        @test chromsemi(SpelledInterval) == i"a1+0"
+        @test chromsemi(SpelledInterval) == i"a1:0"
     end
 
     @testset "interval class interface" begin
@@ -188,7 +188,7 @@
         @test abs(i"-m3") == i"m3"
 
         @test ic(i"-M3") == i"m6"
-        @test embed(i"M3") == i"M3+0"
+        @test embed(i"M3") == i"M3:0"
         @test intervaltype(SpelledIC) == SpelledInterval
         @test intervalclasstype(SpelledIC) == SpelledIC
 
@@ -211,13 +211,13 @@
     end
 
     @testset "pitch interface" begin
-        @test topitch(i"m3+4") == p"Eb4"
-        @test tointerval(p"C#3") == i"a1+3"
+        @test topitch(i"m3:4") == p"Eb4"
+        @test tointerval(p"C#3") == i"a1:3"
 
-        @test p"Eb4" + i"P5+0"  == p"Bb4"
-        @test p"Eb4" + i"-m3+0" == p"C4"
-        @test p"Eb4" - i"P5+0"  == p"Ab3"
-        @test p"G4"  - p"C#4"   == i"d5+0"
+        @test p"Eb4" + i"P5:0"  == p"Bb4"
+        @test p"Eb4" + i"-m3:0" == p"C4"
+        @test p"Eb4" - i"P5:0"  == p"Ab3"
+        @test p"G4"  - p"C#4"   == i"d5:0"
 
         @test alteration(p"Ab-1") == -1
         @test alteration(p"A#-1") == 1
