@@ -50,9 +50,9 @@ e.g. `P1` for a perfect unison, `m3` for a minor 3rd or `aa4` for a double augme
 |aa... |augmented multiple times |
 
 Spelled intervals have the same elements as intervals but additionally take a number of octaves,
-written a suffix `+n`, e.g. `P1+0` or `m3+20`.
+written a suffix `:n`, e.g. `P1:0` or `m3:20`.
 By default, intervals are directed upwards. Downwards intervals are indicated by a negative sign,
-e.g. `-M2+1` (a major 9th down).
+e.g. `-M2:1` (a major 9th down).
 For interval classes, downward and upward intervals cannot be distinguish,
 so a downward interval is represented by its complementary upward interval:
 
