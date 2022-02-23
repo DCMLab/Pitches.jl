@@ -1,7 +1,7 @@
 name = "Pitches"
 uuid = "71ce3a53-bc01-4ee9-b4af-5ce581ee5149"
 authors = ["Christoph Finkensiep <chfin@chfin.de>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
