@@ -189,6 +189,9 @@
 
         @test ic(i"-M3") == i"m6"
         @test embed(i"M3") == i"M3:0"
+        @test embed(i"M7") == i"M7:0"
+        @test embed(i"P4") == i"P4:0"
+        @test embed(i"a1") == i"a1:0"
         @test intervaltype(SpelledIC) == SpelledInterval
         @test intervalclasstype(SpelledIC) == SpelledIC
 
