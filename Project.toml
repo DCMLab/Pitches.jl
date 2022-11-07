@@ -1,7 +1,7 @@
 name = "Pitches"
 uuid = "71ce3a53-bc01-4ee9-b4af-5ce581ee5149"
 authors = ["Christoph Finkensiep <chfin@chfin.de>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [compat]
 julia = "1"
