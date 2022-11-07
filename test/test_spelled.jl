@@ -18,6 +18,8 @@
         @test i"-M3:0" == spelled(-4, 2)
         @test p"C♭4" == spelledp(-7, 8)
         @test p"Cb4" == spelledp(-7, 8)
+        @test p"Cb-1" == spelledp(-7, 3)
+        @test p"C#-1" == spelledp(7, -5)
         @test i"m3" == sic(-3)
         @test i"-m3" == sic(3)
         @test p"C♯" == spc(7)
@@ -63,15 +65,20 @@
         @test letter(p"F#") == 'F'
 
         # edge cases
-        @test alteration(i"P4") == 0
-        @test alteration(i"M7") == 0
         @test alteration(i"-P4:0") == 0
         @test alteration(i"-M7:0") == 0
-
         @test alteration(i"a4:0") == 1
         @test alteration(i"m7:0") == -1
         @test alteration(i"-a4:0") == 1
         @test alteration(i"-m7:0") == -1
+        @test alteration(i"d1:0") == 1 # d1:0 == -a1:0
+        
+        @test alteration(i"P4") == 0
+        @test alteration(i"M7") == 0
+        @test alteration(i"d1") == -1
+
+        @test alteration(p"C#-1") == 1
+        @test alteration(p"Cb-1") == -1
         
         @test alteration(p"F") == 0
         @test alteration(p"B") == 0
@@ -119,10 +126,14 @@
         @test octave(SpelledInterval) == i"P1:1"
         @test sign(i"m2:0") == 1
         @test sign(i"P1:0") == 0
-        @test sign(i"d1:0") == 0
-        @test sign(i"a1:0") == 0
+        @test sign(i"d1:0") == -1
+        @test sign(i"a1:0") == 1
         @test sign(i"-m3:0") == -1
+        @test sign(i"P4:0") == 1
+        @test sign(i"-M7:0") == -1
         @test abs(i"-m3:0") == i"m3:0"
+        @test i"m2:0" < i"M2:0"
+        @test i"-m2:0" > i"-M2:0"
 
         @test ic(i"M3:3") == i"M3"
         @test ic(i"-M3:1") == i"m6"
@@ -182,9 +193,11 @@
         @test octave(SpelledIC) == i"P1"
         @test sign(i"m2") == 1
         @test sign(i"P1") == 0
-        @test sign(i"d1") == 0
-        @test sign(i"a1") == 0
+        @test sign(i"d1") == -1
+        @test sign(i"a1") == 1
         @test sign(i"-m3") == -1
+        @test sign(i"P4") == 1
+        @test sign(i"-M7") == 1
         @test abs(i"-m3") == i"m3"
 
         @test ic(i"-M3") == i"m6"
@@ -224,6 +237,8 @@
 
         @test alteration(p"Ab-1") == -1
         @test alteration(p"A#-1") == 1
+
+        @test p"C-1" > p"Cb-1"
 
         @test pc(p"Eb4") == p"Eb"
         @test embed(p"Eb4") == p"Eb4"

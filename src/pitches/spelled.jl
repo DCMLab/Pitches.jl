@@ -70,6 +70,7 @@ function diasteps end
 Return the number of semitones by which the interval is altered from its the perfect or major variant.
 Positive alteration always indicates augmentation,
 negative alteration indicates diminution (minor or smaller) of the interval.
+For interval classes, the alteration always corresponds to the upward version of the interval.
 For pitches, return the accidentals (positive=sharps, negative=flats, `0`=natural).
 """
 function alteration end
@@ -170,15 +171,12 @@ function Base.show(io::IO, i::SpelledInterval)
 end
 
 function Base.show(io::IO, p::Pitch{SpelledInterval})
-    i = p.pitch
-    dia = degree(i)
-    alter = alteration(i)
-    print(io, string('A' + mod(dia + 2, 7), accstr(alter, '♯', '♭'), string(octaves(i))))
+    dia = degree(p)
+    alter = alteration(p)
+    print(io, string('A' + mod(dia + 2, 7), accstr(alter, '♯', '♭'), string(octaves(p))))
 end
 
-Base.isless(i1::SpelledInterval, i2::SpelledInterval) =
-    (diasteps(i1), alteration(i1)) <
-    (diasteps(i2), alteration(i2))
+Base.isless(i1::SpelledInterval, i2::SpelledInterval) = sign(i1 - i2) == -1
 
 Base.isequal(i1::SpelledInterval, i2::SpelledInterval) =
     i1.octaves == i2.octaves && i1.fifths == i2.fifths
@@ -197,7 +195,7 @@ Base.zero(::SpelledInterval) = spelled(0,0)
 
 octave(::Type{SpelledInterval}) = spelled(0,1)
 
-Base.sign(i::SpelledInterval) = sign(diasteps(i))
+Base.sign(i::SpelledInterval) = cmp((diasteps(i), fld(i.fifths + 1, 7)), (0,0))
 Base.abs(i::SpelledInterval) = if sign(i) < 0; -i else i end
 
 ic(i::SpelledInterval) = sic(i.fifths)
@@ -288,7 +286,13 @@ Base.zero(::SpelledIC) = sic(0)
 octave(::Type{SpelledIC}) = sic(0)
 function Base.sign(i::SpelledIC)
     dia = degree(i)
-    if dia == 0; 0 elseif dia > 3; -1 else 1 end
+    if dia == 0
+        cmp(fld(i.fifths + 1, 4), 0)
+    elseif dia > 3
+        -1
+    else
+        1
+    end
 end
 Base.abs(i::SpelledIC) = if sign(i) < 0; -i else i end
 
